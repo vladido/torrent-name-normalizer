@@ -1,0 +1,6 @@
+poll_interval_seconds = 60
+dry_run = true
+max_renames_per_run = 5
+
+[categories]
+tv-sonarr = "sonarr"

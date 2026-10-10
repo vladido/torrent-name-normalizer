@@ -1,0 +1,7 @@
+poll_interval_seconds = 60
+
+[auto_add]
+dry_run = true
+max_adds_per_run = 1
+root_folder_path = "/tv"
+quality_profile_id = 1

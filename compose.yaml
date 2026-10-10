@@ -1,0 +1,79 @@
+services:
+  torrent-name-normalizer:
+    image: ghcr.io/vladido/torrent-name-normalizer:latest
+    container_name: torrent-name-normalizer
+    restart: unless-stopped
+    env_file:
+      - ./secrets/normalizer.env
+    environment:
+      - NORMALIZER_AUDIT_PATH=/audit/normalizer.jsonl
+      - NORMALIZER_API_PORT=8077
+    expose:
+      - "8077"
+    volumes:
+      - ./config/config.toml:/app/config/config.toml:ro
+      - ./audit:/audit
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-m", "torrent_normalizer.main", "--healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - servarr
+
+  sonarr-series-auto-add:
+    image: ghcr.io/vladido/torrent-name-normalizer:latest
+    container_name: sonarr-series-auto-add
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "torrent_normalizer.auto_add_main"]
+    env_file:
+      - ./secrets/normalizer.env
+    environment:
+      - AUTO_ADD_CONFIG=/app/config/auto_add.toml
+      - AUTO_ADD_HEALTH_PATH=/tmp/auto-add-health.json
+      - AUTO_ADD_AUDIT_PATH=/audit/auto-add.jsonl
+      - AUTO_ADD_HEALTH_MAX_AGE_SECONDS=180
+      - AUTO_ADD_API_PORT=8078
+    expose:
+      - "8078"
+    volumes:
+      - ./config/auto_add.toml:/app/config/auto_add.toml:ro
+      - ./audit:/audit
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-m", "torrent_normalizer.auto_add_main", "--healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - servarr
+
+networks:
+  servarr:
+    external: true
+    name: ${SERVARR_NETWORK:-servarr}

@@ -1,0 +1,9 @@
+.git
+__pycache__
+*.py[cod]
+.pytest_cache
+.coverage
+secrets/*
+!secrets/normalizer.env.example
+audit/
+*.log
